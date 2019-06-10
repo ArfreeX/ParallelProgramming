@@ -3,6 +3,7 @@
 #include <mutex>
 #include "Drawer.h"
 #include <curses.h>
+#include "../assets/Slug.h"
 
 namespace  ncurses
 {
@@ -27,9 +28,10 @@ void Drawer::initColoring()
 {
     start_color();
     init_pair(1, COLOR_BLACK, COLOR_BLUE);
+    init_pair(2, COLOR_BLACK, COLOR_BLACK);
     init_pair(3, COLOR_BLACK, COLOR_GREEN);
-
-    init_pair(2, COLOR_WHITE, COLOR_BLACK);
+    init_pair(4, COLOR_BLACK, COLOR_YELLOW);
+    init_pair(5, COLOR_BLACK, COLOR_RED);
 }
 
 
@@ -86,9 +88,18 @@ void Drawer::drawPicture()
                 drawSlug(std::make_pair(i, j));
                 break;
 
+            case LeafPointState::INFECTED_SLUG:
+                drawInfectedSlug(std::make_pair(i, j));
+                break;
+
             case LeafPointState::EATEN:
                 drawLeafEaten(std::make_pair(i, j));
                 break;
+
+            case LeafPointState::REGENERATING:
+                drawLeafRegenerating(std::make_pair(i, j));
+                break;
+
             default:
                 break;
             }
@@ -110,7 +121,7 @@ void Drawer::controlInputLoop(bool &interruptExecution)
         erase();
     }
     interruptExecution = true;
-    //assets::Slug::stopSlugs();
+    assets::Slug::stopSlugs();
 }
 
 
@@ -129,6 +140,18 @@ void Drawer::drawLeafEaten(pair_size_t position)
 void Drawer::drawLeafFull(pair_size_t position)
 {
     mvaddch(position.second, position.first, ' ' | COLOR_PAIR(3));
+}
+
+
+void Drawer::drawLeafRegenerating(pair_size_t position)
+{
+    mvaddch(position.second, position.first, ' ' | COLOR_PAIR(4));
+}
+
+
+void Drawer::drawInfectedSlug(pair_size_t position)
+{
+    mvaddch(position.second, position.first, ' ' | COLOR_PAIR(5));
 }
 
 }  // namespace ncurses

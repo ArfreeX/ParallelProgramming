@@ -28,6 +28,8 @@ private:
     void drawSlug(pair_size_t position);
     void drawLeafEaten(pair_size_t position);
     void drawLeafFull(pair_size_t position);
+    void drawLeafRegenerating(pair_size_t position);
+    void drawInfectedSlug(pair_size_t position);
 
     const pair_size_t LEFT_CORNER;
     const pair_size_t SIZES;

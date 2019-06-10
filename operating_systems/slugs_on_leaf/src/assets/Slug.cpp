@@ -17,6 +17,7 @@ Slug::Slug(pair_size_t initialPosition, Direction initialDirection, std::shared_
     : position(initialPosition), direction(initialDirection), LEAF_PTR(leafPtr)
 {
     speed = 1000.0 / 50;
+    transformed = false;
 }
 
 
@@ -32,6 +33,7 @@ Slug::~Slug()
 
 void Slug::execute()
 {
+    threadRunning = true;
     thread = std::thread(&Slug::movement, this);
 }
 
@@ -49,12 +51,34 @@ pair_size_t Slug::getPosition()
     return position;
 }
 
+
+void Slug::killThread()
+{
+    LEAF_PTR->slugKilled(position);
+    threadRunning = false;
+}
+
+
 void Slug::movement()
 {
-    while(!stopThread)
+    while(not stopThread && threadRunning)
     {
     positionChange();
-    std::this_thread::sleep_for(std::chrono::milliseconds(700));
+
+    if(not transformed)
+    {
+        slugTransformationRoll();
+    }
+    else
+    {
+        infectedTimer--;
+        if(infectedTimer <= std::chrono::seconds(0))
+        {
+            killThread();
+        }
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
     }
 }
 
@@ -87,7 +111,7 @@ void Slug::positionChange()
         }
 
         std::lock_guard<std::mutex> guard(slugMutex);
-        if(not LEAF_PTR->moveAllowed(position, previousPosition))
+        if(not LEAF_PTR->moveAllowed(position, previousPosition, transformed))
         {
             position = previousPosition;
         }
@@ -99,5 +123,15 @@ void Slug::positionChange()
     }
 }
 
+
+void Slug::slugTransformationRoll()
+{
+    transformed = helpers::Randomizer::rollSlugTransformation();
+
+    if(transformed)
+    {
+        infectedTimer = std::chrono::seconds(10);
+    }
+}
 
 } // namespace assets

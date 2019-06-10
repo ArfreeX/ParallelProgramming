@@ -21,8 +21,12 @@ void ExecutionManager::execute()
                 PITCH_CORNER, PITCH_EDGES);
     std::shared_ptr<SlugManager> slugManagerPtr = std::make_shared<SlugManager>(PITCH_CORNER, PITCH_EDGES, leafPtr);
     ncurses::Drawer drawer(PITCH_CORNER, PITCH_EDGES, leafPtr);
+
     drawer.run();
     drawer.controlInput(interruptExecution);
+
+    leafPtr->executeRegeneration();
+
     while(not interruptExecution)
     {
         slugManagerPtr->spawnSlug();

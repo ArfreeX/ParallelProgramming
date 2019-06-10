@@ -18,6 +18,8 @@ public:
     static Direction drawDirection();
     static std::stack<Direction> drawDirectionStack();
     static pair_size_t drawPointInside(pair_size_t hookPoint, pair_size_t boundaries);
+    static bool rollSlugTransformation();
+
     static std::random_device randomGenerator;
 };
 
