@@ -1,3 +1,4 @@
+#pragma once
 #ifndef SLUG_H
 #define SLUG_H
 
@@ -25,15 +26,16 @@ namespace assets
 class Slug
 {
 public:
-    Slug(pair_size_t initialPosition, Direction initialDirection, std::shared_ptr<assets::Leaf> const leafPtr);
+    Slug(double speed, pair_size_t initialPosition, Direction initialDirection, std::shared_ptr<assets::Leaf> const leafPtr);
     ~Slug();
 
     static void stopSlugs();
 
     void execute();
     pair_size_t getPosition();
+    bool isTransformed();
     void killThread();
-
+    void increaseTimerAfterKilling();
 private:
     void movement();
     void positionChange();
@@ -53,7 +55,10 @@ private:
     bool transformed;
     bool threadRunning;
 
-    std::chrono::seconds infectedTimer;
+
+    std::chrono::milliseconds speedDelay;
+    std::chrono::milliseconds infectedTimer;
+    std::chrono::milliseconds definitiveTimer;
 };
 
 } // namespace assets

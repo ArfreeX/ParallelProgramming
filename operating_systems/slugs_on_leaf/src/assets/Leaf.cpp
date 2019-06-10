@@ -1,4 +1,5 @@
 #include "Leaf.h"
+#include "Slug.h"
 
 namespace assets
 {
@@ -13,6 +14,13 @@ Leaf::Leaf(pair_size_t leftPitchCorner, pair_size_t pitchSizes) :
     {
         row.resize(PITCH_SIZES.second);
         std::fill(row.begin(), row.end(), LeafPointState::FULL);
+    }
+
+    slugsOnLeaf.resize(PITCH_SIZES.first);
+    for(auto & row : slugsOnLeaf)
+    {
+        row.resize(PITCH_SIZES.second);
+        std::fill(row.begin(), row.end(), nullptr);
     }
 }
 
@@ -66,9 +74,9 @@ void Leaf::regeneration()
 }
 
 
-void Leaf::slugKilled(pair_size_t position)
+void Leaf::slugKilled(pair_size_t point)
 {
-    pointHealed(position);
+    leafPointsState[point.first][point.second] = LeafPointState::FULL;
 }
 
 
@@ -112,24 +120,47 @@ bool Leaf::spawnAllowed(pair_size_t position)
     return false;
 }
 
-bool Leaf::moveAllowed(pair_size_t position, pair_size_t previousPosition, bool transformed)
+bool Leaf::moveAllowed(Slug* slug, pair_size_t previousPosition)
 {
     std::lock_guard<std::mutex> guardLeaf(leafMutex);
+    auto position = slug->getPosition();
 
-    if(position.first < PITCH_SIZES.first and position.second < PITCH_SIZES.second
-            and leafPointsState[position.first][position.second] == LeafPointState::FULL)
+    if(position.first < PITCH_SIZES.first and position.second < PITCH_SIZES.second)
     {
-        if(transformed)
+        if(slug->isTransformed())
         {
-            pointNotEated(previousPosition);
-            leafPointsState[position.first][position.second] = LeafPointState::INFECTED_SLUG;
+            if(leafPointsState[position.first][position.second] == LeafPointState::FULL or
+                    leafPointsState[position.first][position.second] == LeafPointState::SLUG)
+            {
+                pointNotEated(previousPosition);
+                leafPointsState[position.first][position.second] = LeafPointState::INFECTED_SLUG;
+
+                if(slugsOnLeaf[position.first][position.second])
+                {
+                    slugsOnLeaf[position.first][position.second]->killThread();
+                    slug->increaseTimerAfterKilling();
+                }
+
+                slugsOnLeaf[previousPosition.first][previousPosition.second] = nullptr;
+                slugsOnLeaf[position.first][position.second] = slug;
+                        return true;
+            }
         }
         else
         {
-            pointEated(previousPosition);
-            leafPointsState[position.first][position.second] = LeafPointState::SLUG;
+            if(leafPointsState[position.first][position.second] == LeafPointState::FULL)
+            {
+                pointEated(previousPosition);
+                leafPointsState[position.first][position.second] = LeafPointState::SLUG;
+
+                slugsOnLeaf[previousPosition.first][previousPosition.second] = nullptr;
+                slugsOnLeaf[position.first][position.second] = slug;
+
+                return true;
+            }
+
         }
-        return true;
+
     }
 
     return false;

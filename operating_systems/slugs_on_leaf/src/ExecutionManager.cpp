@@ -15,7 +15,8 @@ ExecutionManager::ExecutionManager(pair_size_t pitch_corner, pair_size_t pitch_e
 
 void ExecutionManager::execute()
 {
-    int x = 0;
+    uint startingColonyCounter = 50;
+
     bool interruptExecution = false;
     std::shared_ptr<assets::Leaf> leafPtr = std::make_shared<assets::Leaf>(
                 PITCH_CORNER, PITCH_EDGES);
@@ -27,11 +28,16 @@ void ExecutionManager::execute()
 
     leafPtr->executeRegeneration();
 
+    while(startingColonyCounter > 0)
+    {
+        slugManagerPtr->spawnSlug();
+        startingColonyCounter--;
+    }
+
     while(not interruptExecution)
     {
         slugManagerPtr->spawnSlug();
         std::this_thread::sleep_for(std::chrono::milliseconds(5000));
-        x++;
     }
 //    std::vector<std::unique_ptr<assets::Ball>> basket;
 //    bool stopProgram = false;

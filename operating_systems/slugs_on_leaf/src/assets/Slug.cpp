@@ -13,10 +13,10 @@ std::mutex Slug::slugMutex;
 std::atomic<bool> Slug::stopThread;
 
 
-Slug::Slug(pair_size_t initialPosition, Direction initialDirection, std::shared_ptr<assets::Leaf> const leafPtr)
+Slug::Slug(double speed, pair_size_t initialPosition, Direction initialDirection, std::shared_ptr<assets::Leaf> const leafPtr)
     : position(initialPosition), direction(initialDirection), LEAF_PTR(leafPtr)
 {
-    speed = 1000.0 / 50;
+    speedDelay = std::chrono::milliseconds(static_cast<int>((round(1000 / speed))));
     transformed = false;
 }
 
@@ -52,6 +52,12 @@ pair_size_t Slug::getPosition()
 }
 
 
+bool Slug::isTransformed()
+{
+    return transformed;
+}
+
+
 void Slug::killThread()
 {
     LEAF_PTR->slugKilled(position);
@@ -71,14 +77,17 @@ void Slug::movement()
     }
     else
     {
-        infectedTimer--;
-        if(infectedTimer <= std::chrono::seconds(0))
+        infectedTimer -= speedDelay;
+        definitiveTimer -= speedDelay;
+
+        if(infectedTimer <= std::chrono::milliseconds(0) or
+                definitiveTimer <= std::chrono::milliseconds(0))
         {
             killThread();
         }
     }
 
-    std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    std::this_thread::sleep_for(speedDelay);
     }
 }
 
@@ -111,7 +120,7 @@ void Slug::positionChange()
         }
 
         std::lock_guard<std::mutex> guard(slugMutex);
-        if(not LEAF_PTR->moveAllowed(position, previousPosition, transformed))
+        if(not LEAF_PTR->moveAllowed(this, previousPosition))
         {
             position = previousPosition;
         }
@@ -124,13 +133,25 @@ void Slug::positionChange()
 }
 
 
+void Slug::increaseTimerAfterKilling()
+{
+    infectedTimer += std::chrono::milliseconds(60000);
+    speedDelay /= 2;
+
+    if(speedDelay < std::chrono::milliseconds(100))
+    {
+        speedDelay = std::chrono::milliseconds(100);
+    }
+}
+
 void Slug::slugTransformationRoll()
 {
     transformed = helpers::Randomizer::rollSlugTransformation();
 
     if(transformed)
     {
-        infectedTimer = std::chrono::seconds(10);
+        definitiveTimer = std::chrono::milliseconds(40000);
+        infectedTimer = std::chrono::milliseconds(10000);
     }
 }
 

@@ -1,3 +1,4 @@
+#pragma once
 #ifndef EXECUTIONMANAGER_H
 #define EXECUTIONMANAGER_H
 

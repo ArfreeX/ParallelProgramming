@@ -91,10 +91,10 @@ pair_size_t Randomizer::drawPointInside(pair_size_t hookPoint, pair_size_t bound
 bool Randomizer::rollSlugTransformation()
 {
     const int MIN_BORDER = 1;
-    const int MAX_BORDER = 100;
+    const int MAX_BORDER = 1000;
     std::uniform_int_distribution<int> roll(MIN_BORDER, MAX_BORDER);
 
-    if(static_cast<int>(roll(randomGenerator)) > 98)
+    if(static_cast<int>(roll(randomGenerator)) > 995)
     {
         return true;
     }

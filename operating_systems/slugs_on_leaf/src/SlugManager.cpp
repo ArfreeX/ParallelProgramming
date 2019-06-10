@@ -21,7 +21,7 @@ void SlugManager::spawnSlug()
     } while(not LEAF_PTR->spawnAllowed(startingPos));
 
     std::unique_ptr<assets::Slug> slugPtr = std::make_unique<assets::Slug>(
-                startingPos, helpers::Randomizer::drawDirection(), LEAF_PTR);
+                helpers::Randomizer::drawSpeed(), startingPos, helpers::Randomizer::drawDirection(), LEAF_PTR);
     slugPtr->execute();
     slugColony.emplace_back(std::move(slugPtr));
 }

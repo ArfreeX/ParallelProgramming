@@ -1,3 +1,4 @@
+#pragma once
 #ifndef LEAF_H
 #define LEAF_H
 
@@ -22,6 +23,8 @@ using pair_size_t = std::pair<size_t, size_t> ;
 namespace assets
 {
 
+class Slug;
+
 class Leaf
 {
 public:
@@ -29,9 +32,9 @@ public:
     ~Leaf();
 
     void executeRegeneration();
-    bool moveAllowed(pair_size_t position, pair_size_t previousPosition, bool transformed);
+    bool moveAllowed(Slug* slug, pair_size_t previousPosition);
     bool spawnAllowed(pair_size_t position);
-    void slugKilled(pair_size_t position);
+    void slugKilled(pair_size_t point);
 
     std::vector<std::vector<LeafPointState>> getLeafState();
 
@@ -48,7 +51,9 @@ private:
 
     std::thread thread;
     bool regenerationProcess;
+
     std::vector<std::vector<LeafPointState>> leafPointsState;
+    std::vector<std::vector<Slug*>> slugsOnLeaf;
     std::list<std::pair<pair_size_t, std::chrono::seconds>> regeneratingPoints;
 };
 
